@@ -1,0 +1,12 @@
+C:\Users\Simone Giovinazzo\dev\mydlls\SerialCommunicationHandler\SerialCommunicationHandler\bin\Debug\net6.0\SerialCommunicationHandler.deps.json
+C:\Users\Simone Giovinazzo\dev\mydlls\SerialCommunicationHandler\SerialCommunicationHandler\bin\Debug\net6.0\SerialCommunicationHandler.dll
+C:\Users\Simone Giovinazzo\dev\mydlls\SerialCommunicationHandler\SerialCommunicationHandler\bin\Debug\net6.0\ref\SerialCommunicationHandler.dll
+C:\Users\Simone Giovinazzo\dev\mydlls\SerialCommunicationHandler\SerialCommunicationHandler\bin\Debug\net6.0\SerialCommunicationHandler.pdb
+C:\Users\Simone Giovinazzo\dev\mydlls\SerialCommunicationHandler\SerialCommunicationHandler\obj\Debug\net6.0\SerialCommunicationHandler.csproj.AssemblyReference.cache
+C:\Users\Simone Giovinazzo\dev\mydlls\SerialCommunicationHandler\SerialCommunicationHandler\obj\Debug\net6.0\SerialCommunicationHandler.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\Simone Giovinazzo\dev\mydlls\SerialCommunicationHandler\SerialCommunicationHandler\obj\Debug\net6.0\SerialCommunicationHandler.AssemblyInfoInputs.cache
+C:\Users\Simone Giovinazzo\dev\mydlls\SerialCommunicationHandler\SerialCommunicationHandler\obj\Debug\net6.0\SerialCommunicationHandler.AssemblyInfo.cs
+C:\Users\Simone Giovinazzo\dev\mydlls\SerialCommunicationHandler\SerialCommunicationHandler\obj\Debug\net6.0\SerialCommunicationHandler.csproj.CoreCompileInputs.cache
+C:\Users\Simone Giovinazzo\dev\mydlls\SerialCommunicationHandler\SerialCommunicationHandler\obj\Debug\net6.0\SerialCommunicationHandler.dll
+C:\Users\Simone Giovinazzo\dev\mydlls\SerialCommunicationHandler\SerialCommunicationHandler\obj\Debug\net6.0\ref\SerialCommunicationHandler.dll
+C:\Users\Simone Giovinazzo\dev\mydlls\SerialCommunicationHandler\SerialCommunicationHandler\obj\Debug\net6.0\SerialCommunicationHandler.pdb

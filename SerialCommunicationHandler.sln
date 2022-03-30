@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32014.148
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SerialCommunicationHandler", "SerialCommunicationHandler\SerialCommunicationHandler.csproj", "{8CC0BE0A-3458-4976-B029-3ABBEEC303BB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sandbox", "Sandbox\Sandbox.csproj", "{CCE0A92C-DE37-480B-B9BF-D9316BAE5670}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8CC0BE0A-3458-4976-B029-3ABBEEC303BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8CC0BE0A-3458-4976-B029-3ABBEEC303BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8CC0BE0A-3458-4976-B029-3ABBEEC303BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8CC0BE0A-3458-4976-B029-3ABBEEC303BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CCE0A92C-DE37-480B-B9BF-D9316BAE5670}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CCE0A92C-DE37-480B-B9BF-D9316BAE5670}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CCE0A92C-DE37-480B-B9BF-D9316BAE5670}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CCE0A92C-DE37-480B-B9BF-D9316BAE5670}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {41AD6F94-7656-450A-931D-CBB015C13F0C}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,16 @@
+{
+  "version": 2,
+  "dgSpecHash": "3mhzi2OLQ4QGRsAz3aQZ8XXByYTk2A/fUUHLElZORwzGnolIlWp/CjAoN2RjdAFDvpaoNeGSNlUCQvBBpQ7AIA==",
+  "success": true,
+  "projectFilePath": "C:\\Users\\Simone Giovinazzo\\dev\\mydlls\\SerialCommunicationHandler\\SerialCommunicationHandler\\SerialCommunicationHandler.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\Simone Giovinazzo\\.nuget\\packages\\runtime.linux-arm.runtime.native.system.io.ports\\6.0.0\\runtime.linux-arm.runtime.native.system.io.ports.6.0.0.nupkg.sha512",
+    "C:\\Users\\Simone Giovinazzo\\.nuget\\packages\\runtime.linux-arm64.runtime.native.system.io.ports\\6.0.0\\runtime.linux-arm64.runtime.native.system.io.ports.6.0.0.nupkg.sha512",
+    "C:\\Users\\Simone Giovinazzo\\.nuget\\packages\\runtime.linux-x64.runtime.native.system.io.ports\\6.0.0\\runtime.linux-x64.runtime.native.system.io.ports.6.0.0.nupkg.sha512",
+    "C:\\Users\\Simone Giovinazzo\\.nuget\\packages\\runtime.native.system.io.ports\\6.0.0\\runtime.native.system.io.ports.6.0.0.nupkg.sha512",
+    "C:\\Users\\Simone Giovinazzo\\.nuget\\packages\\runtime.osx-arm64.runtime.native.system.io.ports\\6.0.0\\runtime.osx-arm64.runtime.native.system.io.ports.6.0.0.nupkg.sha512",
+    "C:\\Users\\Simone Giovinazzo\\.nuget\\packages\\runtime.osx-x64.runtime.native.system.io.ports\\6.0.0\\runtime.osx-x64.runtime.native.system.io.ports.6.0.0.nupkg.sha512",
+    "C:\\Users\\Simone Giovinazzo\\.nuget\\packages\\system.io.ports\\6.0.0\\system.io.ports.6.0.0.nupkg.sha512"
+  ],
+  "logs": []
+}
