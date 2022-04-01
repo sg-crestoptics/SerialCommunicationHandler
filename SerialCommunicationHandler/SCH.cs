@@ -55,6 +55,7 @@
         /// <param name="command">Command, carriage return is added automatically when sending the command</param>
         /// <param name="multiline">Specify if the firmware response to this command is multiline or not</param>
         /// <param name="onCommandExecuted">Function called when the command got the response from the firmware.</param>
+        /// <param name="waitAfterResponseTime">Time to wait after the response has been received by the firmware.</param>
         /// <param name="multilineInterval">Max waiting time in ms between each line of a multiline response command</param>
         public void AddCommandToQueue(string command, bool multiline, CommandExecutedHandler onCommandExecuted, int waitAfterResponseTime = 0, int multilineInterval = 40)
         {
@@ -79,14 +80,14 @@
             }
         }
         /// <summary>
-        /// Removes all the command in queue inserted with <see cref="AddCommandToQueue(string, bool, bool, int)"/>.
+        /// Removes all the command in queue inserted with <see cref="AddCommandToQueue(Command)"/> or <seealso cref="AddCommandToQueue(string, bool, CommandExecutedHandler, int, int)"/>.
         /// </summary>
         public void ClearCommandQueue()
         {
             commandsQueue.Clear();
         }
         /// <summary>
-        /// Starts processing the queue of commands inserted with <see cref="AddCommandToQueue"/> on another thread and returns it.
+        /// Starts processing the queue of commands inserted with <seealso cref="AddCommandToQueue(Command)"/> or <see cref="AddCommandToQueue(string, bool, CommandExecutedHandler, int, int)"/> on another thread and returns it.
         /// </summary>
         /// <returns></returns>
         public Thread StartQueueProcessing()
