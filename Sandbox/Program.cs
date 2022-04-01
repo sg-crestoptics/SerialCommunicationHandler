@@ -1,11 +1,10 @@
 ﻿using SerialCommunicationHandler;
-using System.Diagnostics;
 
 string portName = SCH.GetAvailablePorts()[0];
 
 if (portName != null)
 {
-    SCH sch = new SCH("\r");
+    SCH sch = new SCH();
     sch.SerialPort.PortName = portName;
     sch.SerialPort.BaudRate = 115200;
     sch.SerialPort.WriteTimeout = 1000;
@@ -16,27 +15,20 @@ if (portName != null)
     sch.SerialPort.Parity = System.IO.Ports.Parity.None;
     sch.SerialPort.Open();
 
+    sch.AddCommandToQueue("GG0", true, OnCommandExecuted, 0, 40);
+    Thread queueProcessingThread1 = sch.StartQueueProcessing();
+    queueProcessingThread1.Join();
 
+    sch.AddCommandToQueue("GG1", true, (c, r) => Console.WriteLine($"Command: {c}\nResponse: {r}"), 0, 40);
+    sch.AddCommandToQueue("v", false, OnCommandExecuted, 0);
+    Thread queueProcessingThread2 = sch.StartQueueProcessing();
 
-    sch.AddCommandToQueue("GG0", true, OnGG0Executed, 200);
-    sch.AddCommandToQueue("GG0", true, (c, r) => Console.WriteLine("Lambda function works!"));
-    Stopwatch sw = Stopwatch.StartNew();
-    Thread queueProcessingThread = sch.StartQueueProcessing();
-
-    while (true)
-    {
-        if (sw.ElapsedMilliseconds > 1100)
-        {
-            sch.AbortQueueProcessingThread();
-            break;
-        }
-    }
-
-    //sch.SerialPort.Close();
 }
 
-void OnGG0Executed(Command command, string response)
+void OnCommandExecuted(Command command, string response)
 {
-
+    Console.WriteLine(command);
+    Console.WriteLine(response);
 }
+
 

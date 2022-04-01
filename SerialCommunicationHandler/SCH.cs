@@ -5,19 +5,36 @@
     using System.IO.Ports;
     using static SerialCommunicationHandler.Command;
 
+    public enum QueueStatus
+    {
+        Processing,
+        Idle
+    }
+    /// <summary>
+    /// Wrapper class to handle Serial Port communcation. Supports queue of commands to send to the firmware.
+    /// </summary>
     public class SCH
     {
         #region Constructors
         public SerialPort SerialPort { get; set; }
         public string CarriageReturn { get; set; } = "\r";
 
-        public SCH(SerialPort serialPort, string carriageReturn)
+        /// <summary>
+        /// Instance of the wrapper class.
+        /// </summary>
+        /// <param name="serialPort">Instance of the serial port <see cref="System.IO.Ports"/>.</param>
+        /// <param name="carriageReturn">Speicify the carriage return used in the communication.</param>
+        public SCH(SerialPort serialPort, string carriageReturn = "\r")
         {
             SerialPort = serialPort;
             CarriageReturn = carriageReturn;
             currentCommandReadThread = new Thread(() => { });
         }
-        public SCH(string carriageReturn)
+        /// <summary>
+        /// Instance of the wrapper class.
+        /// </summary>
+        /// <param name="carriageReturn">Speicify the carriage return used in the communication.</param>
+        public SCH(string carriageReturn = "\r")
         {
             SerialPort = new SerialPort();
             CarriageReturn = carriageReturn;
@@ -30,7 +47,7 @@
         private Command currentCommand = null!;
         private Thread commandQueueProcessingThread = null!;
         private Thread currentCommandReadThread = null!;
-        public string Buffer { get; set; } = "";
+        public QueueStatus QueueStatus { get; private set; } = QueueStatus.Idle;
 
         /// <summary>
         /// Adding a command to the Queue in a thread safe way.
@@ -39,12 +56,12 @@
         /// <param name="multiline">Specify if the firmware response to this command is multiline or not</param>
         /// <param name="onCommandExecuted">Function called when the command got the response from the firmware.</param>
         /// <param name="multilineInterval">Max waiting time in ms between each line of a multiline response command</param>
-        public void AddCommandToQueue(string command, bool multiline, CommandExecutedHandler onCommandExecuted, int multilineInterval = 10)
+        public void AddCommandToQueue(string command, bool multiline, CommandExecutedHandler onCommandExecuted, int waitAfterResponseTime = 0, int multilineInterval = 40)
         {
 
             lock (commandQueueLock)
             {
-                commandsQueue.Enqueue(new Command(command, multiline, onCommandExecuted, multilineInterval));
+                commandsQueue.Enqueue(new Command(command, multiline, onCommandExecuted, waitAfterResponseTime, multilineInterval));
             }
         }
         /// <summary>
@@ -53,6 +70,8 @@
         /// <param name="command">Command</param>
         public void AddCommandToQueue(Command command)
         {
+            if (QueueStatus == QueueStatus.Processing)
+                throw new ExceptionQueueProcessing("Can't add command to the queue while its being processed!");
 
             lock (commandQueueLock)
             {
@@ -72,11 +91,18 @@
         /// <returns></returns>
         public Thread StartQueueProcessing()
         {
+            // Can't start a queue while another is already in process
+            if (QueueStatus == QueueStatus.Processing)
+                throw new ExceptionQueueProcessing("Another Queue is processing!");
+
+
             if (commandsQueue.Count == 0)
                 throw new ExceptionEmptyQueue("Cannot process empty queue is empty!");
 
             commandQueueProcessingThread = new Thread(() =>
             {
+                QueueStatus = QueueStatus.Processing;
+
                 int i = 0;
                 try
                 {
@@ -86,6 +112,7 @@
                         currentCommand = commandsQueue.Dequeue();
                         SendCommandAndWait(currentCommand);
                     }
+                    QueueStatus = QueueStatus.Idle;
                 }
                 catch (Exception e)
                 {
@@ -108,41 +135,42 @@
         }
 
         /// <summary>
-        /// Send the command through the serial port and wait for the read thread to finish
+        /// Send the command through the serial port and wait for the read thread to finish.
         /// </summary>
         /// <param name="command"></param>
-        public void SendCommandAndWait(Command command)
+        public string SendCommandAndWait(Command command)
         {
+            string buffer = "";
             currentCommandReadThread = new Thread(() =>
             {
-                ReadCommand(command);
+                buffer = ReadCommand(command);
             });
             currentCommandReadThread.Start();
             SerialPort.Write(command.Value.Contains(CarriageReturn) ? command.Value : command.Value + CarriageReturn);
             currentCommandReadThread.Join();
+            command.OnCommandExecuted(command, buffer);
+            return buffer;
         }
         /// <summary>
         /// Reading the serial port buffer till it reaches a carriage return <c>\r</c>
         /// </summary>
         /// <param name="command"></param>
-        public void ReadCommand(Command command)
+        public string ReadCommand(Command command)
         {
+            string buffer = "";
+
             if (!command.MultiLine)
             {
                 while (true)
                 {
-                    Buffer += SerialPort.ReadExisting();
-                    if (Buffer.Contains(CarriageReturn))
+                    buffer += SerialPort.ReadExisting();
+                    if (buffer.Contains(CarriageReturn))
                     {
-                        Console.WriteLine(Buffer);
-                        Buffer = Buffer.Replace(CarriageReturn, "\n");
+                        buffer = buffer.Replace(CarriageReturn, "\n");
                         // in case the command neeeds to wait for the hardware to change its state after the response is received
-                        if (command.MaxWaitingInterval > 0)
-                            Thread.Sleep(command.MaxWaitingInterval);
-
-                        command.OnCommandExecuted(command, Buffer);
-                        Buffer = "";
-                        return;
+                        if (command.WaitAfterRespnseTime > 0)
+                            Thread.Sleep(command.WaitAfterRespnseTime);
+                        return buffer;
                     }
                 }
             }
@@ -154,34 +182,30 @@
                     string message = SerialPort.ReadExisting();
                     if (message != "" && message != null)
                     {
-                        Buffer += message;
+                        buffer += message;
                         //reset the stopwatch whenever a message arrives
                         stopwatch.Restart();
                         continue;
                     }
                     if (stopwatch.ElapsedMilliseconds > command.MultilineInterval)
                     {
-                        Buffer += message;
+                        buffer += message;
                         stopwatch.Stop();
-                        Buffer = Buffer.Replace(CarriageReturn, "\n");
-                        Buffer = Buffer.Replace(CarriageReturn, "\n");
-                        Console.WriteLine(Buffer);
-                        if (command.MaxWaitingInterval > 0)
-                            Thread.Sleep(command.MaxWaitingInterval);
-                        Buffer = "";
-                        return;
+                        buffer = buffer.Replace(CarriageReturn, "\n");
+                        if (command.WaitAfterRespnseTime > 0)
+                            Thread.Sleep(command.WaitAfterRespnseTime);
+                        return buffer;
                     }
                 }
             }
         }
-
-        private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
-        {
-            Console.WriteLine(SerialPort.ReadExisting());
-        }
         #endregion
 
         #region StaticMethods
+        /// <summary>
+        /// Returns the name of the available Ports connected to the device.
+        /// </summary>
+        /// <returns></returns>
         public static string[] GetAvailablePorts()
         {
             return SerialPort.GetPortNames();
