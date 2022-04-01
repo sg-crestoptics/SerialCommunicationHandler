@@ -3,6 +3,8 @@
     using SerialCommunicationHandler.Exceptions;
     using System.Diagnostics;
     using System.IO.Ports;
+    using static SerialCommunicationHandler.Command;
+
     public class SCH
     {
         #region Constructors
@@ -13,6 +15,7 @@
         {
             SerialPort = serialPort;
             CarriageReturn = carriageReturn;
+            currentCommandReadThread = new Thread(() => { });
         }
         public SCH(string carriageReturn)
         {
@@ -24,23 +27,24 @@
         #region QueueHandling
         public Queue<Command> commandsQueue { get; } = new Queue<Command>();
         private readonly object commandQueueLock = new object();
-        private Command currentCommand;
-        private Thread commandQueueProcessingThread;
-        private Thread currentCommandReadThread;
+        private Command currentCommand = null!;
+        private Thread commandQueueProcessingThread = null!;
+        private Thread currentCommandReadThread = null!;
         public string Buffer { get; set; } = "";
 
         /// <summary>
         /// Adding a command to the Queue in a thread safe way.
         /// </summary>
         /// <param name="command">Command, carriage return is added automatically when sending the command</param>
-        /// <param name="synchronous">Specify if the firmware will respond synchonously to this command</param>
         /// <param name="multiline">Specify if the firmware response to this command is multiline or not</param>
-        public void AddCommandToQueue(string command, bool synchronous, bool multiline, int multilineInterval)
+        /// <param name="onCommandExecuted">Function called when the command got the response from the firmware.</param>
+        /// <param name="multilineInterval">Max waiting time in ms between each line of a multiline response command</param>
+        public void AddCommandToQueue(string command, bool multiline, CommandExecutedHandler onCommandExecuted, int multilineInterval = 10)
         {
 
             lock (commandQueueLock)
             {
-                commandsQueue.Enqueue(new Command(command, synchronous, multiline, multilineInterval));
+                commandsQueue.Enqueue(new Command(command, multiline, onCommandExecuted, multilineInterval));
             }
         }
         /// <summary>
@@ -63,7 +67,7 @@
             commandsQueue.Clear();
         }
         /// <summary>
-        /// Starts processing the queue of commands inserted with <see cref="AddCommandToQueue(string, bool, bool)"/> on another thread and returns it.
+        /// Starts processing the queue of commands inserted with <see cref="AddCommandToQueue"/> on another thread and returns it.
         /// </summary>
         /// <returns></returns>
         public Thread StartQueueProcessing()
@@ -86,7 +90,6 @@
                 catch (Exception e)
                 {
                     Console.WriteLine($"Thread interrupted while executing {currentCommand}\n[ERROR]: {e}");
-                    ClearCommandQueue();
                     return;
                 }
             });
@@ -95,10 +98,13 @@
 
             return commandQueueProcessingThread;
         }
-
+        /// <summary>
+        /// Interrupt the thread where the queue of commands is being processed and clear the Q
+        /// </summary>
         public void AbortQueueProcessingThread()
         {
             commandQueueProcessingThread.Interrupt();
+            ClearCommandQueue();
         }
 
         /// <summary>
@@ -109,10 +115,7 @@
         {
             currentCommandReadThread = new Thread(() =>
             {
-                if (command.Synchronous)
-                    ReadSyncCommand(command);
-                else
-                    ReadAsyncCommand(command);
+                ReadCommand(command);
             });
             currentCommandReadThread.Start();
             SerialPort.Write(command.Value.Contains(CarriageReturn) ? command.Value : command.Value + CarriageReturn);
@@ -122,7 +125,7 @@
         /// Reading the serial port buffer till it reaches a carriage return <c>\r</c>
         /// </summary>
         /// <param name="command"></param>
-        public void ReadSyncCommand(Command command)
+        public void ReadCommand(Command command)
         {
             if (!command.MultiLine)
             {
@@ -133,6 +136,11 @@
                     {
                         Console.WriteLine(Buffer);
                         Buffer = Buffer.Replace(CarriageReturn, "\n");
+                        // in case the command neeeds to wait for the hardware to change its state after the response is received
+                        if (command.MaxWaitingInterval > 0)
+                            Thread.Sleep(command.MaxWaitingInterval);
+
+                        command.OnCommandExecuted(command, Buffer);
                         Buffer = "";
                         return;
                     }
@@ -158,16 +166,15 @@
                         Buffer = Buffer.Replace(CarriageReturn, "\n");
                         Buffer = Buffer.Replace(CarriageReturn, "\n");
                         Console.WriteLine(Buffer);
+                        if (command.MaxWaitingInterval > 0)
+                            Thread.Sleep(command.MaxWaitingInterval);
                         Buffer = "";
                         return;
                     }
                 }
             }
         }
-        public void ReadAsyncCommand(Command command)
-        {
 
-        }
         private void SerialPort_DataReceived(object sender, SerialDataReceivedEventArgs e)
         {
             Console.WriteLine(SerialPort.ReadExisting());
